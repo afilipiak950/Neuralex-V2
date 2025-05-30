@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 import uuid
 
-import aioredis
+import redis.asyncio as aioredis
 from sqlalchemy import select
 
 from app.db.session import get_db

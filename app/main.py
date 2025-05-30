@@ -26,7 +26,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
-import aioredis
+import redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -68,6 +68,7 @@ async def startup_event():
         
         # Initialize Redis connection
         redis_client = await aioredis.from_url(REDIS_URL)
+        await redis_client.ping()
         logger.info("Redis connection established")
         
         # Start background worker
