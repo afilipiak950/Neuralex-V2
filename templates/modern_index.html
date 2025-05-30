@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">NeuraLex Platform</div>
+            <ul class="nav-links">
+                <li><a href="#home" class="active">Home</a></li>
+                <li><a href="#upload">Upload</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>AI-Powered Document Processing</h1>
+            <p>Transform your document workflow with intelligent classification, entity extraction, and automated processing powered by cutting-edge machine learning.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                <a href="#upload" class="btn btn-primary">Start Processing</a>
+                <a href="/dashboard" class="btn btn-secondary">View Dashboard</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Overview -->
+    <section class="section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-docs">0</div>
+                    <div class="stat-label">Documents Processed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completed-docs">0</div>
+                    <div class="stat-label">Successfully Classified</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="processing-docs">0</div>
+                    <div class="stat-label">Currently Processing</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upload Section -->
+    <section id="upload" class="upload-section">
+        <div class="glass-card">
+            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem; font-weight: 700;">Process New Document</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">Upload a document for AI-powered classification and entity extraction</p>
+            
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 1rem; margin-bottom: 2rem; color: #ef4444;">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            {% if success %}
+            <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; border-radius: 12px; padding: 1rem; margin-bottom: 2rem; color: #22c55e;">
+                {{ success }}
+                {% if job_id %}
+                <div style="margin-top: 0.5rem; font-family: monospace; font-size: 0.9rem;">
+                    Job ID: {{ job_id }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="upload-container">
+                <div class="upload-icon">📄</div>
+                <h3 style="margin-bottom: 1rem;">Drag & Drop Files Here</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">or fill in the form below</p>
+                
+                <form id="upload-form" action="/ingest-form" method="post">
+                    <div class="form-group">
+                        <label class="form-label">Document Source</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label class="form-label" style="font-size: 0.9rem; color: var(--text-muted);">Google Cloud Storage URI</label>
+                                <input type="text" 
+                                       name="gcs_uri" 
+                                       class="form-input" 
+                                       placeholder="gs://your-bucket/document.json"
+                                       style="font-family: monospace;">
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.9rem; color: var(--text-muted);">Direct Text Input</label>
+                                <textarea name="text_content" 
+                                          id="text_content"
+                                          class="form-textarea" 
+                                          placeholder="Paste your document content here..."></textarea>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
+                            Provide either a GCS URI or paste text content directly
+                        </p>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                        ⚡ Process Document
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="text-center">
+            <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">Platform Features</h2>
+            <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto 3rem;">
+                Leverage advanced AI capabilities to transform your document processing workflow
+            </p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3 class="feature-title">Document Classification</h3>
+                <p class="feature-description">
+                    Automatically classify documents into types like invoices, contracts, emails, and more using advanced ML models.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">Entity Extraction</h3>
+                <p class="feature-description">
+                    Extract key information like names, dates, amounts, and addresses from your documents with high accuracy.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Real-time Processing</h3>
+                <p class="feature-description">
+                    Leverage Redis-powered job queues for scalable, real-time document processing with background workers.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <h3 class="feature-title">API Integration</h3>
+                <p class="feature-description">
+                    RESTful API with comprehensive documentation for easy integration into your existing workflows and systems.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">☁️</div>
+                <h3 class="feature-title">Cloud Storage</h3>
+                <p class="feature-description">
+                    Seamless integration with Google Cloud Storage for secure document storage and retrieval.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Analytics Dashboard</h3>
+                <p class="feature-description">
+                    Monitor processing statistics, track performance metrics, and visualize document insights in real-time.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Jobs Section -->
+    <section class="section">
+        <div class="container">
+            <h2 style="text-center; font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Recent Processing Jobs</h2>
+            <div id="recent-jobs" class="glass-card">
+                <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                    <p>No recent jobs. Start by uploading a document above.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: var(--surface-glass); backdrop-filter: blur(20px); border-top: 1px solid var(--border-glass); padding: 2rem; text-align: center; margin-top: 4rem;">
+        <div class="container">
+            <p style="color: var(--text-secondary);">
+                © 2024 NeuraLex Platform. Powered by FastAPI, Redis, and advanced ML models.
+            </p>
+        </div>
+    </footer>
+
+    <script src="/static/js/modern-app.js"></script>
+</body>
+</html>

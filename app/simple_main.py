@@ -4,7 +4,7 @@ Simplified NeuraLex Platform - FastAPI Application
 
 import os
 import logging
-from fastapi import FastAPI, Request, Form, BackgroundTasks
+from fastapi import FastAPI, Request, Form, BackgroundTasks, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -58,7 +58,7 @@ async def startup_event():
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Serve the main dashboard page"""
-    return templates.TemplateResponse("index.html", {
+    return templates.TemplateResponse("modern_index.html", {
         "request": request,
         "title": "NeuraLex Platform"
     })
@@ -71,7 +71,7 @@ async def dashboard(request: Request):
     completed_docs = len([d for d in documents.values() if d.get("status") == "completed"])
     pending_docs = len([d for d in documents.values() if d.get("status") == "pending"])
     
-    return templates.TemplateResponse("dashboard.html", {
+    return templates.TemplateResponse("modern_dashboard.html", {
         "request": request,
         "title": "Dashboard - NeuraLex Platform",
         "total_documents": total_docs,
@@ -133,7 +133,7 @@ async def ingest_form(
     request: Request,
     gcs_uri: Optional[str] = Form(None),
     text_content: Optional[str] = Form(None),
-    background_tasks: BackgroundTasks = None
+    background_tasks: BackgroundTasks
 ):
     """Handle form submission from the web interface"""
     job_id = str(uuid.uuid4())

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/modern-style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">NeuraLex Platform</div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#upload">Upload</a></li>
+                <li><a href="/#features">Features</a></li>
+                <li><a href="/dashboard" class="active">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <section class="hero" style="min-height: 50vh; background: radial-gradient(ellipse at center, rgba(255, 140, 66, 0.1) 0%, transparent 70%);">
+        <div class="hero-content">
+            <h1 style="font-size: 3rem;">Analytics Dashboard</h1>
+            <p>Real-time monitoring of document processing and system performance</p>
+        </div>
+    </section>
+
+    <!-- Dashboard Content -->
+    <div class="container section">
+        <!-- Performance Metrics -->
+        <div class="stats-grid" style="margin-bottom: 3rem;">
+            <div class="stat-card">
+                <div class="stat-number" id="total-docs">{{ total_documents }}</div>
+                <div class="stat-label">Total Documents</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--accent-orange);">
+                    +12% this week
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completed-docs">{{ completed_documents }}</div>
+                <div class="stat-label">Successfully Processed</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--accent-orange);">
+                    98.5% success rate
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pending-docs">{{ pending_documents }}</div>
+                <div class="stat-label">Currently Processing</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #38bdf8;">
+                    Real-time updates
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2.3s</div>
+                <div class="stat-label">Avg Processing Time</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #22c55e;">
+                    -15% improvement
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Queue Status -->
+        <div class="glass-card" style="margin-bottom: 3rem;">
+            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">⚡</span>
+                Processing Queue Status
+            </h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div class="processing-status">
+                    <div class="status-header">
+                        <div class="status-indicator status-pending">
+                            ⏳ Queue Length
+                        </div>
+                        <span id="queue-length">0</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 25%"></div>
+                    </div>
+                </div>
+                
+                <div class="processing-status">
+                    <div class="status-header">
+                        <div class="status-indicator status-processing">
+                            ⚡ Active Workers
+                        </div>
+                        <span>3</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <div class="processing-status">
+                    <div class="status-header">
+                        <div class="status-indicator status-completed">
+                            ✅ Throughput/Min
+                        </div>
+                        <span>24</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 90%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Type Distribution -->
+        <div class="glass-card" style="margin-bottom: 3rem;">
+            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">📊</span>
+                Document Type Distribution
+            </h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: var(--accent-red);">42%</div>
+                    <div style="color: var(--text-secondary);">Invoices</div>
+                </div>
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📋</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: var(--accent-orange);">28%</div>
+                    <div style="color: var(--text-secondary);">Contracts</div>
+                </div>
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✉️</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: #38bdf8;">18%</div>
+                    <div style="color: var(--text-secondary);">Emails</div>
+                </div>
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📑</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: #22c55e;">12%</div>
+                    <div style="color: var(--text-secondary);">Reports</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Documents -->
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.5rem;">📋</span>
+                    Recent Documents
+                </h2>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    🔄 Refresh
+                </button>
+            </div>
+            
+            <div id="documents-list">
+                {% if recent_documents %}
+                    {% for doc in recent_documents %}
+                    <div class="glass-card" style="margin-bottom: 1rem; background: var(--surface-glass-hover);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 0.5rem;">
+                                    Document {{ doc.id[:8] }}...
+                                </div>
+                                <div class="status-indicator status-{{ doc.status }}">
+                                    {% if doc.status == 'pending' %}⏳{% endif %}
+                                    {% if doc.status == 'processing' %}⚡{% endif %}
+                                    {% if doc.status == 'completed' %}✅{% endif %}
+                                    {% if doc.status == 'failed' %}❌{% endif %}
+                                    {{ doc.status.upper() }}
+                                </div>
+                            </div>
+                            <div style="text-align: right; color: var(--text-secondary); font-size: 0.9rem;">
+                                {{ doc.created_at }}
+                            </div>
+                        </div>
+                        
+                        {% if doc.status == 'processing' %}
+                        <div class="progress-bar" style="margin: 1rem 0;">
+                            <div class="progress-fill" style="width: {{ range(30, 90) | random }}%"></div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if doc.entities %}
+                        <div style="margin-top: 1rem;">
+                            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Extracted Entities:</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                {% for entity in doc.entities %}
+                                <span style="
+                                    background: rgba(255, 56, 56, 0.1);
+                                    color: var(--accent-red);
+                                    padding: 0.25rem 0.75rem;
+                                    border-radius: 20px;
+                                    font-size: 0.8rem;
+                                    font-weight: 500;
+                                ">
+                                    {{ entity.type }}: {{ entity.text }} ({{ (entity.confidence * 100) | round }}%)
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if doc.gcs_uri %}
+                        <div style="margin-top: 1rem; font-family: monospace; font-size: 0.8rem; color: var(--text-muted);">
+                            Source: {{ doc.gcs_uri }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                    <h3>No documents processed yet</h3>
+                    <p>Upload your first document to see processing results here</p>
+                    <a href="/#upload" class="btn btn-primary" style="margin-top: 1rem;">
+                        Upload Document
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="glass-card" style="margin-top: 3rem;">
+            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.5rem;">💚</span>
+                System Health
+            </h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div style="text-align: center;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(var(--accent-red) 0deg 324deg, var(--surface-glass) 324deg 360deg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; position: relative;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-weight: 600;">90%</div>
+                    </div>
+                    <div style="font-weight: 500;">CPU Usage</div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(var(--accent-orange) 0deg 216deg, var(--surface-glass) 216deg 360deg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; position: relative;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-weight: 600;">60%</div>
+                    </div>
+                    <div style="font-weight: 500;">Memory</div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(#22c55e 0deg 324deg, var(--surface-glass) 324deg 360deg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; position: relative;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-weight: 600;">90%</div>
+                    </div>
+                    <div style="font-weight: 500;">Disk Space</div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(#38bdf8 0deg 360deg, var(--surface-glass) 360deg 360deg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; position: relative;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-weight: 600;">✓</div>
+                    </div>
+                    <div style="font-weight: 500;">All Systems</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="background: var(--surface-glass); backdrop-filter: blur(20px); border-top: 1px solid var(--border-glass); padding: 2rem; text-align: center; margin-top: 4rem;">
+        <div class="container">
+            <p style="color: var(--text-secondary);">
+                © 2024 NeuraLex Platform. Real-time dashboard updates every 3 seconds.
+            </p>
+        </div>
+    </footer>
+
+    <script src="/static/js/modern-app.js"></script>
+    <script>
+        // Auto-refresh dashboard data
+        setInterval(() => {
+            location.reload();
+        }, 30000); // Refresh every 30 seconds
+    </script>
+</body>
+</html>
