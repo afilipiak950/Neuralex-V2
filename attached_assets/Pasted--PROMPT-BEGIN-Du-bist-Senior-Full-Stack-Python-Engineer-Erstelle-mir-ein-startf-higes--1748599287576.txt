@@ -1,0 +1,129 @@
+### PROMPT-BEGIN ###
+
+Du bist Senior-Full-Stack-Python-Engineer.  
+Erstelle mir ein startfähiges Replit-Projekt namens **neuralex-platform** mit folgendem Funktionsumfang ⬇️
+
+────────────────────────────────────────────
+🔹 1 · TECHNOLOGIE-STACK
+────────────────────────────────────────────
+• Python 3.11  
+• FastAPI + Uvicorn (REST API)  
+• Redis (Job-Queue)  
+• SQLAlchemy + PostgreSQL (Cloud SQL)  
+• Requests/HTTPX (Call zum externen ML-Server auf Hetzner)  
+• Pydantic (Schemas / Validation)
+
+────────────────────────────────────────────
+🔹 2 · VERZEICHNIS- & DATEISTRUKTUR
+────────────────────────────────────────────
+root/
+│
+├── .replit                  # Startbefehl
+├── replit.nix               # System-Packages
+│
+├── app/
+│   ├── main.py              # FastAPI-Entrypoint
+│   ├── ingestion/
+│   │   └── gcp_fetcher.py   # holt JSON aus GCP-Bucket
+│   ├── ml_client/
+│   │   └── predict.py       # POST /plain_text an Hetzner-Server
+│   ├── schemas/
+│   │   ├── data_types.py    # aus dataTypes.json generiert
+│   │   ├── doc_types.py     # aus docTypes.json generiert
+│   │   └── event_types.py   # aus eventTypes.json generiert
+│   ├── db/
+│   │   ├── models.py        # SQLAlchemy-ORM
+│   │   └── session.py
+│   └── utils/
+│       └── mapping.py       # helper, label↔️id-Mapping
+│
+├── tests/
+│   └── test_endpoints.py
+│
+└── README.md
+
+────────────────────────────────────────────
+🔹 3 · INHALT WICHTIGER DATEIEN (Ausschnitte)
+────────────────────────────────────────────
+📄 **.replit**
+run = "uvicorn app.main:app --host 0.0.0.0 --port 8080"
+
+📄 **replit.nix**
+{ pkgs }: {
+  deps = [
+    pkgs.python311
+    pkgs.redis
+  ];
+}
+
+📄 **app/main.py**
+"""
+FastAPI-App mit:
+  – /health          GET   -> {"status": "ok"}
+  – /ingest          POST  -> nimmt {gcs_uri:str} oder {payload:dict}
+  – ruft async gcp_fetcher.fetch()
+  – pushed Job in Redis-Queue (key: 'doc_jobs')
+  – background-worker konsumiert, ruft ml_client.predict(), speichert Ergebnis in DB
+"""
+
+📄 **app/ingestion/gcp_fetcher.py**
+"""
+fetch(gcs_uri) -> dict
+Verwendet google-cloud-storage-Client (place holder für creds).
+"""
+
+📄 **app/ml_client/predict.py**
+"""
+async def predict(job_payload: dict) -> dict:
+    POST http://ML_SERVER/predict
+    Rückgabe JSON {doc_type,event_type,entities}
+"""
+
+📄 **app/db/models.py**
+"""
+Klassen: Document, Entity  (SQLAlchemy + UUID primary key)
+"""
+
+📄 **tests/test_endpoints.py**
+"""
+pytest-Smoke-Test:
+  – /health 200
+  – /ingest 202 mit Sample-Payload
+"""
+
+────────────────────────────────────────────
+🔹 4 · ABHÄNGIGKEITEN (requirements.txt)
+────────────────────────────────────────────
+fastapi
+uvicorn[standard]
+pydantic
+sqlalchemy
+asyncpg
+redis
+aiohttp
+google-cloud-storage
+python-dotenv
+pytest
+httpx
+
+────────────────────────────────────────────
+🔹 5 · ENV-SECRETS (als Replit-Secrets anlegen)
+────────────────────────────────────────────
+POSTGRES_DSN      = "postgresql+asyncpg://user:pass@host:port/db"
+REDIS_URL         = "redis://localhost:6379/0"
+GCP_BUCKET_NAME   = "neuralex-incoming-json"
+ML_SERVER_URL     = "http://<hetzner-ip>:8000"
+
+────────────────────────────────────────────
+🔹 6 · TODO-LISTE (automatisch als Kommentare einfügen)
+────────────────────────────────────────────
+TODO: Implement background-worker mit aioredis Subscriber  
+TODO: Add Alembic migrations (optional)  
+TODO: Add retry-logic in ml_client.predict()  
+TODO: Add /docs (Swagger) with JWT auth stubs  
+TODO: Map JSON-Schemas → Pydantic-Models
+
+────────────────────────────────────────────
+Erzeuge alle Dateien inkl. Boiler-Plate-Code, Kommentare und Schritt-für-Schritt Anweisungen im README, wie das Projekt lokal in Replit gestartet wird (redis-server, uvicorn-run).
+
+### PROMPT-END ###
