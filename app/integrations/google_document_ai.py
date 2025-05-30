@@ -1,17 +1,18 @@
 """
-Google Cloud Document AI Integration
-Holt OCR-Daten direkt über die Document AI API ab
+Google Cloud Vision API Integration
+Führt OCR-Abfragen direkt über die Vision API durch
 """
 
 import os
 import json
 import logging
+import base64
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-class GoogleDocumentAIClient:
+class GoogleVisionOCRClient:
     """
     Client für Google Cloud Document AI API
     """

@@ -4,7 +4,7 @@ Simplified NeuraLex Platform - FastAPI Application
 
 import os
 import logging
-from fastapi import FastAPI, Request, Form, BackgroundTasks, Depends
+from fastapi import FastAPI, Request, Form, BackgroundTasks, Depends, File, UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -13,7 +13,7 @@ from typing import Optional
 import uuid
 import json
 from datetime import datetime
-from app.integrations.google_document_ai import document_ai_client
+from app.integrations.google_vision_api import vision_client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -190,7 +190,7 @@ async def list_jobs(skip: int = 0, limit: int = 50):
     
     # Hole Google Cloud OCR-Dokumente falls konfiguriert
     try:
-        gcp_docs = await document_ai_client.get_processed_documents(limit=limit)
+        gcp_docs = await vision_client.search_processed_documents("", limit=limit)
         # Konvertiere GCP-Format in unser lokales Format
         for gcp_doc in gcp_docs:
             if gcp_doc["document_id"] not in documents:
@@ -203,11 +203,11 @@ async def list_jobs(skip: int = 0, limit: int = 50):
                     "confidence": gcp_doc.get("confidence", 0.0),
                     "entities": gcp_doc.get("entities", []),
                     "text": gcp_doc.get("text", ""),
-                    "source": "google_cloud_ai"
+                    "source": "google_vision_api"
                 }
                 local_docs.append(converted_doc)
     except Exception as e:
-        logger.error(f"Fehler beim Abrufen der GCP-Dokumente: {e}")
+        logger.error(f"Fehler beim Abrufen der Vision API Dokumente: {e}")
     
     # Sortiere nach Erstellungsdatum
     all_docs = sorted(local_docs, key=lambda x: x.get("created_at", ""), reverse=True)
@@ -259,42 +259,67 @@ async def process_document_background(job_id: str):
         
         logger.error(f"Document processing failed: {job_id}, error: {e}")
 
-@app.get("/api/gcp/documents")
-async def get_gcp_documents(limit: int = 10, search: str = None):
-    """Hole Dokumente direkt aus Google Cloud Document AI"""
+@app.post("/api/vision/ocr")
+async def perform_ocr(file: UploadFile = File(...)):
+    """Führt OCR auf einem hochgeladenen Bild durch"""
     try:
-        if search:
-            gcp_docs = await document_ai_client.search_documents(search, limit)
-        else:
-            gcp_docs = await document_ai_client.get_processed_documents(limit)
-            
-        return {
-            "documents": gcp_docs,
-            "total": len(gcp_docs),
-            "source": "google_cloud_document_ai",
-            "configured": document_ai_client.is_configured
+        # Lese Bilddaten
+        image_data = await file.read()
+        
+        # Führe OCR über Vision API durch
+        result = await vision_client.perform_ocr(image_data, file.content_type or "image/png")
+        
+        if "error" in result:
+            return {"error": result["error"], "configured": vision_client.is_configured}
+        
+        # Speichere Ergebnis lokal
+        job_id = result["document_id"]
+        documents[job_id] = {
+            "id": job_id,
+            "status": "completed",
+            "created_at": result["created_at"],
+            "updated_at": result["created_at"],
+            "source": "google_vision_api",
+            "filename": file.filename,
+            "text": result["text"],
+            "entities": result["entities"],
+            "confidence": result["confidence"]
         }
+        
+        return result
+        
     except Exception as e:
-        logger.error(f"Fehler beim Abrufen der GCP-Dokumente: {e}")
-        return {
-            "documents": [],
-            "total": 0,
-            "error": str(e),
-            "configured": document_ai_client.is_configured
-        }
+        logger.error(f"Fehler bei OCR-Verarbeitung: {e}")
+        return {"error": str(e), "configured": vision_client.is_configured}
 
-@app.get("/api/gcp/document/{document_id}")
-async def get_gcp_document(document_id: str):
-    """Hole ein spezifisches Dokument aus Google Cloud"""
+@app.post("/api/vision/ocr-url")
+async def perform_ocr_from_url(image_url: str):
+    """Führt OCR auf einem Bild von einer URL durch"""
     try:
-        doc = await document_ai_client.query_document_by_id(document_id)
-        if doc:
-            return doc
-        else:
-            return {"error": "Document not found"}
+        result = await vision_client.process_document_from_url(image_url)
+        
+        if "error" in result:
+            return {"error": result["error"], "configured": vision_client.is_configured}
+        
+        # Speichere Ergebnis lokal
+        job_id = result["document_id"]
+        documents[job_id] = {
+            "id": job_id,
+            "status": "completed",
+            "created_at": result["created_at"],
+            "updated_at": result["created_at"],
+            "source": "google_vision_api",
+            "image_url": image_url,
+            "text": result["text"],
+            "entities": result["entities"],
+            "confidence": result["confidence"]
+        }
+        
+        return result
+        
     except Exception as e:
-        logger.error(f"Fehler beim Abrufen des Dokuments {document_id}: {e}")
-        return {"error": str(e)}
+        logger.error(f"Fehler bei OCR von URL: {e}")
+        return {"error": str(e), "configured": vision_client.is_configured}
 
 @app.get("/api/search")
 async def search_all_documents(q: str, limit: int = 20):
