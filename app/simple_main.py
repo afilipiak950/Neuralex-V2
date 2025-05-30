@@ -332,9 +332,9 @@ async def search_all_documents(q: str, limit: int = 20):
         if q.lower() in text_content.lower() or q.lower() in doc.get("id", "").lower():
             results.append({**doc, "source": "local"})
     
-    # Google Cloud Dokumente durchsuchen
+    # Vision API Dokumente durchsuchen
     try:
-        gcp_results = await document_ai_client.search_documents(q, limit//2)
+        gcp_results = await vision_client.search_processed_documents(q, limit//2)
         for gcp_doc in gcp_results:
             results.append({
                 "id": gcp_doc["document_id"],
@@ -343,10 +343,10 @@ async def search_all_documents(q: str, limit: int = 20):
                 "doc_type": gcp_doc.get("doc_type", "unknown"),
                 "confidence": gcp_doc.get("confidence", 0.0),
                 "created_at": gcp_doc.get("created_at", ""),
-                "source": "google_cloud_ai"
+                "source": "google_vision_api"
             })
     except Exception as e:
-        logger.error(f"Fehler bei der GCP-Suche: {e}")
+        logger.error(f"Fehler bei der Vision API Suche: {e}")
     
     # Limitiere und sortiere Ergebnisse
     results = sorted(results, key=lambda x: x.get("confidence", 0.0), reverse=True)[:limit]
@@ -361,11 +361,9 @@ async def search_all_documents(q: str, limit: int = 20):
 async def get_configuration_status():
     """Zeige den Konfigurationsstatus der Integrationen"""
     return {
-        "google_cloud_ai": {
-            "configured": document_ai_client.is_configured,
-            "project_id": document_ai_client.project_id,
-            "location": document_ai_client.location,
-            "processor_id": document_ai_client.processor_id
+        "google_vision_api": {
+            "configured": vision_client.is_configured,
+            "project_id": vision_client.project_id if hasattr(vision_client, 'project_id') else None
         },
         "database": {
             "type": "in_memory",
