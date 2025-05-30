@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NeuraLex Platform</title>
+    <meta name="description" content="Real-time document processing dashboard">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff7730'><path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px; vertical-align: middle;">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                    NeuraLex Platform
+                </div>
+                <nav class="nav">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/dashboard" class="nav-link active">Dashboard</a>
+                    <a href="/docs" class="nav-link">API Docs</a>
+                    <div id="healthStatus" class="health-indicator">
+                        Checking...
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main" id="dashboard">
+        <div class="container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h1>Document Processing Dashboard</h1>
+                    <p>Real-time monitoring and management of document processing jobs</p>
+                </div>
+                <div class="header-controls">
+                    <button class="btn btn-outline btn-sm" data-action="refresh" data-tooltip="Refresh all data">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M23 4v6h-6" stroke="currentColor" stroke-width="2"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Refresh
+                    </button>
+                    <label class="auto-refresh-toggle">
+                        <input type="checkbox" id="autoRefreshToggle" checked>
+                        <span>Auto-refresh</span>
+                    </label>
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Statistics Cards -->
+            <section class="stats-section">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14,2 14,8 20,8" stroke="white" stroke-width="2" fill="none"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="total-documents">{{ stats.total_documents }}</div>
+                            <div class="stat-label">Total Documents</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="processed-documents">{{ stats.processed_documents }}</div>
+                            <div class="stat-label">Processed</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="pending-documents">{{ stats.pending_documents }}</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="success-rate">{{ stats.success_rate }}%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span>Processing Progress</span>
+                        <span id="progress-text">{{ stats.processed_documents }} / {{ stats.total_documents }}</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" 
+                             data-value="{{ (stats.processed_documents / stats.total_documents * 100) if stats.total_documents > 0 else 0 }}"
+                             style="width: {{ (stats.processed_documents / stats.total_documents * 100) if stats.total_documents > 0 else 0 }}%">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Jobs Table -->
+            <section class="jobs-section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="table-header">
+                            <h2 class="card-title">Recent Processing Jobs</h2>
+                            <div class="table-controls">
+                                <select id="statusFilter" class="form-select form-select-sm">
+                                    <option value="all">All Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                                <button class="btn btn-sm btn-primary" onclick="window.location.href='/'">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 5v14m7-7H5" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
+                                    Add Document
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        {% if documents %}
+                        <table class="table" id="jobsTable">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Status</th>
+                                    <th>Document Type</th>
+                                    <th>Event Type</th>
+                                    <th>Confidence</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in documents %}
+                                <tr>
+                                    <td>
+                                        <code class="job-id">{{ doc.id[:8] }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if doc.status == 'completed' else 'processing' if doc.status == 'processing' else 'pending' if doc.status == 'pending' else 'error' }}">
+                                            <span class="status-indicator" data-status="{{ doc.status }}"></span>
+                                            {{ doc.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="doc-type">{{ doc.doc_type or '-' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="event-type">{{ doc.event_type or '-' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="confidence">
+                                            {% if doc.confidence %}
+                                                {{ "%.1f"|format(doc.confidence * 100) }}%
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="timestamp" data-tooltip="{{ doc.created_at }}">
+                                            {{ doc.created_at.strftime('%Y-%m-%d %H:%M') if doc.created_at else '-' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline" 
+                                                data-action="view-job" 
+                                                data-job-id="{{ doc.id }}"
+                                                data-tooltip="View job details">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/>
+                                    <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <h3>No Documents Yet</h3>
+                            <p>Start by uploading your first document for processing</p>
+                            <a href="/" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 5v14m7-7H5" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                                Upload Document
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if documents and (documents|length) >= 10 %}
+                    <div class="table-footer">
+                        <span class="table-info">Showing recent 10 documents</span>
+                        <a href="/jobs" class="btn btn-sm btn-outline">View All Jobs</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">System Status</h3>
+                    </div>
+                    <div class="system-status">
+                        <div class="status-item">
+                            <div class="status-indicator" data-status="completed"></div>
+                            <span>API Service</span>
+                            <span class="status-value" id="api-status">Running</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-indicator" data-status="processing"></div>
+                            <span>Background Worker</span>
+                            <span class="status-value" id="worker-status">Active</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-indicator" data-status="completed"></div>
+                            <span>Database</span>
+                            <span class="status-value" id="db-status">Connected</span>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-indicator" data-status="completed"></div>
+                            <span>Redis Queue</span>
+                            <span class="status-value" id="redis-status">Online</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" style="display: none;" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Refreshing data...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .header-left h1 {
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .header-left p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .auto-refresh-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .auto-refresh-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .stats-section {
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            background: linear-gradient(135deg, var(--tertiary-black), var(--surface-black));
+            border-left: 4px solid var(--primary-orange);
+        }
+        
+        .stat-icon {
+            color: var(--primary-orange);
+            padding: var(--spacing-md);
+            background: rgba(255, 119, 48, 0.1);
+            border-radius: var(--radius-md);
+        }
+        
+        .stat-icon.success {
+            color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .stat-icon.warning {
+            color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .progress-section {
+            margin-top: var(--spacing-xl);
+            background: var(--tertiary-black);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-secondary);
+        }
+        
+        .jobs-section {
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .form-select-sm {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.875rem;
+            width: auto;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .job-id {
+            background: var(--surface-black);
+            color: var(--primary-orange);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .confidence {
+            font-weight: 600;
+        }
+        
+        .timestamp {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-secondary);
+        }
+        
+        .empty-icon {
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .empty-state h3 {
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .empty-state p {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--surface-black);
+            border-top: 1px solid var(--surface-black);
+        }
+        
+        .table-info {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .quick-actions-section {
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .system-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: var(--surface-black);
+            border-radius: var(--radius-md);
+        }
+        
+        .status-value {
+            margin-left: auto;
+            font-weight: 600;
+            color: var(--success);
+        }
+        
+        .alert {
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            border-left: 4px solid;
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--error);
+            color: var(--error);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: var(--spacing-lg);
+            }
+            
+            .header-controls {
+                flex-wrap: wrap;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                align-items: stretch;
+            }
+            
+            .table-controls {
+                justify-content: space-between;
+            }
+            
+            .system-status {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

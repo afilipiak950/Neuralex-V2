@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuraLex Platform - AI Document Processing</title>
+    <meta name="description" content="AI-powered document processing and classification platform">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff7730'><path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px; vertical-align: middle;">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" fill="none"/>
+                    </svg>
+                    NeuraLex Platform
+                </div>
+                <nav class="nav">
+                    <a href="/" class="nav-link active">Home</a>
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                    <a href="/docs" class="nav-link">API Docs</a>
+                    <div id="healthStatus" class="health-indicator">
+                        Checking...
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero fade-in">
+                <div class="text-center mb-4">
+                    <h1>AI-Powered Document Processing</h1>
+                    <p class="lead">
+                        Transform your document workflow with intelligent classification, 
+                        entity extraction, and automated processing powered by machine learning.
+                    </p>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="dashboard-grid mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number" id="quick-total">0</div>
+                        <div class="stat-label">Documents Processed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="quick-success">0</div>
+                        <div class="stat-label">Successfully Classified</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="quick-rate">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Document Upload Section -->
+            <section class="upload-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Process New Document</h2>
+                        <p class="card-subtitle">
+                            Upload a document for AI-powered classification and entity extraction
+                        </p>
+                    </div>
+
+                    <form id="uploadForm" class="upload-form">
+                        <div class="form-group">
+                            <label class="form-label">Document Source</label>
+                            <div class="input-tabs">
+                                <input type="radio" id="sourceGcs" name="source" value="gcs" checked>
+                                <label for="sourceGcs" class="tab-label">GCS URI</label>
+                                
+                                <input type="radio" id="sourceText" name="source" value="text">
+                                <label for="sourceText" class="tab-label">Direct Text</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="gcsGroup">
+                            <label for="gcs_uri" class="form-label">
+                                Google Cloud Storage URI
+                                <span data-tooltip="Enter a GCS URI like: gs://bucket-name/path/to/document.json">ⓘ</span>
+                            </label>
+                            <input 
+                                type="url" 
+                                id="gcs_uri" 
+                                name="gcs_uri" 
+                                class="form-input"
+                                placeholder="gs://neuralex-incoming-json/document.json"
+                                pattern="gs://.*"
+                            >
+                            <small class="form-help">
+                                The document should be accessible from your configured GCS bucket
+                            </small>
+                        </div>
+
+                        <div class="form-group" id="textGroup" style="display: none;">
+                            <label for="text_content" class="form-label">
+                                Document Text Content
+                            </label>
+                            <textarea 
+                                id="text_content" 
+                                name="text_content" 
+                                class="form-textarea"
+                                placeholder="Paste your document content here..."
+                                rows="8"
+                            ></textarea>
+                            <small class="form-help">
+                                Enter the text content of your document for immediate processing
+                            </small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="margin-right: 8px;">
+                                    <path d="M7 10v12m8-16.12L15 14h5.5a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5v-6a.5.5 0 0 1 .5-.5H8.5L7.08 5.88a.5.5 0 0 1 .42-.88h8a.5.5 0 0 1 .5.5v6" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                                Process Document
+                            </button>
+                            <button type="button" class="btn btn-outline" onclick="document.getElementById('uploadForm').reset()">
+                                Clear Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="features-section">
+                <h2 class="text-center mb-4">Platform Features</h2>
+                
+                <div class="dashboard-grid">
+                    <div class="feature-card card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3>Document Classification</h3>
+                        <p>Automatically classify documents into types like invoices, contracts, emails, and more using advanced ML models.</p>
+                    </div>
+
+                    <div class="feature-card card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                        </div>
+                        <h3>Entity Extraction</h3>
+                        <p>Extract key information like names, dates, amounts, and addresses from your documents with high accuracy.</p>
+                    </div>
+
+                    <div class="feature-card card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <h3>Real-time Processing</h3>
+                        <p>Leverage Redis-powered job queues for scalable, real-time document processing with background workers.</p>
+                    </div>
+
+                    <div class="feature-card card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3zM9 11h6m-6 4h6m-6-8h6"/>
+                            </svg>
+                        </div>
+                        <h3>API Integration</h3>
+                        <p>RESTful API with comprehensive documentation for easy integration into your existing workflows and systems.</p>
+                    </div>
+
+                    <div class="feature-card card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                            </svg>
+                        </div>
+                        <h3>Cloud Storage</h3>
+                        <p>Seamless integration with Google Cloud Storage for secure document ingestion and processing.</p>
+                    </div>
+
+                    <div class="feature-card card">
+                        <div class="feature-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16 4v12l-4-2-4 2V4c0-1 1-2 2-2h4c1 0 2 1 2 2z"/>
+                            </svg>
+                        </div>
+                        <h3>Event Tracking</h3>
+                        <p>Classify and track document events with priority levels and automated workflow triggers.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Actions</h2>
+                    </div>
+                    
+                    <div class="actions-grid">
+                        <a href="/dashboard" class="action-button btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 13h8V3H3v10zM3 21h8v-6H3v6zM13 21h8V11h-8v10zM13 3v6h8V3h-8z" fill="currentColor"/>
+                            </svg>
+                            View Dashboard
+                        </a>
+                        
+                        <a href="/docs" class="action-button btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="currentColor"/>
+                                <polyline points="14,2 14,8 20,8" stroke="white" stroke-width="2" fill="none"/>
+                            </svg>
+                            API Documentation
+                        </a>
+                        
+                        <button class="action-button btn btn-outline" data-action="refresh">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M23 4v6h-6" stroke="currentColor" stroke-width="2" fill="none"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                            Refresh Status
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>NeuraLex Platform</h4>
+                    <p>AI-powered document processing platform built with FastAPI, Redis, and modern ML technologies.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Features</h4>
+                    <ul>
+                        <li>Document Classification</li>
+                        <li>Entity Extraction</li>
+                        <li>Real-time Processing</li>
+                        <li>API Integration</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Tech Stack</h4>
+                    <ul>
+                        <li>FastAPI + Uvicorn</li>
+                        <li>Redis Job Queue</li>
+                        <li>PostgreSQL + SQLAlchemy</li>
+                        <li>Google Cloud Storage</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 NeuraLex Platform. Built for intelligent document processing.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" style="display: none;" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+    
+    <!-- Source selection toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sourceRadios = document.querySelectorAll('input[name="source"]');
+            const gcsGroup = document.getElementById('gcsGroup');
+            const textGroup = document.getElementById('textGroup');
+            
+            sourceRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'gcs') {
+                        gcsGroup.style.display = 'block';
+                        textGroup.style.display = 'none';
+                        document.getElementById('gcs_uri').required = true;
+                        document.getElementById('text_content').required = false;
+                    } else {
+                        gcsGroup.style.display = 'none';
+                        textGroup.style.display = 'block';
+                        document.getElementById('gcs_uri').required = false;
+                        document.getElementById('text_content').required = true;
+                    }
+                });
+            });
+            
+            // Load quick stats
+            loadQuickStats();
+        });
+        
+        async function loadQuickStats() {
+            try {
+                const response = await fetch('/jobs?limit=1000');
+                if (response.ok) {
+                    const data = await response.json();
+                    const jobs = data.jobs || [];
+                    
+                    const total = jobs.length;
+                    const completed = jobs.filter(job => job.status === 'completed').length;
+                    const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+                    
+                    document.getElementById('quick-total').textContent = total;
+                    document.getElementById('quick-success').textContent = completed;
+                    document.getElementById('quick-rate').textContent = rate + '%';
+                }
+            } catch (error) {
+                console.log('Could not load quick stats');
+            }
+        }
+    </script>
+
+    <style>
+        .hero {
+            text-align: center;
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .lead {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto var(--spacing-2xl);
+        }
+        
+        .upload-section {
+            margin: var(--spacing-2xl) 0;
+        }
+        
+        .input-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .input-tabs input[type="radio"] {
+            display: none;
+        }
+        
+        .tab-label {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            background: var(--surface-black);
+            border: 1px solid var(--surface-black);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            color: var(--text-secondary);
+        }
+        
+        .input-tabs input[type="radio"]:checked + .tab-label {
+            background: var(--primary-orange);
+            color: white;
+            border-color: var(--primary-orange);
+        }
+        
+        .form-help {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-xs);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+        }
+        
+        .features-section {
+            margin: var(--spacing-2xl) 0;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: var(--spacing-xl);
+        }
+        
+        .feature-icon {
+            color: var(--primary-orange);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .feature-card h3 {
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+        
+        .quick-actions {
+            margin: var(--spacing-2xl) 0;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        
+        .action-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-lg);
+        }
+        
+        .footer {
+            background: var(--secondary-black);
+            border-top: 1px solid var(--surface-black);
+            margin-top: var(--spacing-2xl);
+            padding: var(--spacing-2xl) 0 var(--spacing-lg);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .footer-section h4 {
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-section li {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--surface-black);
+            color: var(--text-muted);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-content {
+            text-align: center;
+            color: var(--text-primary);
+        }
+        
+        .loading-content .spinner {
+            width: 40px;
+            height: 40px;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>
