@@ -131,9 +131,9 @@ async def ingest_document(request: IngestRequest, background_tasks: BackgroundTa
 @app.post("/ingest-form")
 async def ingest_form(
     request: Request,
+    background_tasks: BackgroundTasks,
     gcs_uri: Optional[str] = Form(None),
-    text_content: Optional[str] = Form(None),
-    background_tasks: BackgroundTasks
+    text_content: Optional[str] = Form(None)
 ):
     """Handle form submission from the web interface"""
     job_id = str(uuid.uuid4())
