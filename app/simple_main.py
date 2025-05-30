@@ -13,6 +13,7 @@ from typing import Optional
 import uuid
 import json
 from datetime import datetime
+from app.integrations.google_document_ai import document_ai_client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -184,7 +185,33 @@ async def get_job_status(job_id: str):
 @app.get("/jobs")
 async def list_jobs(skip: int = 0, limit: int = 50):
     """List all processing jobs with pagination"""
-    all_docs = list(documents.values())
+    # Kombiniere lokale Dokumente mit Google Cloud OCR-Daten
+    local_docs = list(documents.values())
+    
+    # Hole Google Cloud OCR-Dokumente falls konfiguriert
+    try:
+        gcp_docs = await document_ai_client.get_processed_documents(limit=limit)
+        # Konvertiere GCP-Format in unser lokales Format
+        for gcp_doc in gcp_docs:
+            if gcp_doc["document_id"] not in documents:
+                converted_doc = {
+                    "id": gcp_doc["document_id"],
+                    "status": gcp_doc["status"],
+                    "created_at": gcp_doc["created_at"],
+                    "updated_at": gcp_doc["created_at"],
+                    "doc_type": gcp_doc.get("doc_type", "unknown"),
+                    "confidence": gcp_doc.get("confidence", 0.0),
+                    "entities": gcp_doc.get("entities", []),
+                    "text": gcp_doc.get("text", ""),
+                    "source": "google_cloud_ai"
+                }
+                local_docs.append(converted_doc)
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der GCP-Dokumente: {e}")
+    
+    # Sortiere nach Erstellungsdatum
+    all_docs = sorted(local_docs, key=lambda x: x.get("created_at", ""), reverse=True)
+    
     return {
         "jobs": all_docs[skip:skip + limit],
         "total": len(all_docs),
@@ -231,6 +258,95 @@ async def process_document_background(job_id: str):
             documents[job_id]["updated_at"] = datetime.utcnow().isoformat()
         
         logger.error(f"Document processing failed: {job_id}, error: {e}")
+
+@app.get("/api/gcp/documents")
+async def get_gcp_documents(limit: int = 10, search: str = None):
+    """Hole Dokumente direkt aus Google Cloud Document AI"""
+    try:
+        if search:
+            gcp_docs = await document_ai_client.search_documents(search, limit)
+        else:
+            gcp_docs = await document_ai_client.get_processed_documents(limit)
+            
+        return {
+            "documents": gcp_docs,
+            "total": len(gcp_docs),
+            "source": "google_cloud_document_ai",
+            "configured": document_ai_client.is_configured
+        }
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen der GCP-Dokumente: {e}")
+        return {
+            "documents": [],
+            "total": 0,
+            "error": str(e),
+            "configured": document_ai_client.is_configured
+        }
+
+@app.get("/api/gcp/document/{document_id}")
+async def get_gcp_document(document_id: str):
+    """Hole ein spezifisches Dokument aus Google Cloud"""
+    try:
+        doc = await document_ai_client.query_document_by_id(document_id)
+        if doc:
+            return doc
+        else:
+            return {"error": "Document not found"}
+    except Exception as e:
+        logger.error(f"Fehler beim Abrufen des Dokuments {document_id}: {e}")
+        return {"error": str(e)}
+
+@app.get("/api/search")
+async def search_all_documents(q: str, limit: int = 20):
+    """Durchsuche alle Dokumente (lokal + Google Cloud)"""
+    results = []
+    
+    # Lokale Dokumente durchsuchen
+    for doc in documents.values():
+        text_content = doc.get("payload", {}).get("content", "") if doc.get("payload") else ""
+        if q.lower() in text_content.lower() or q.lower() in doc.get("id", "").lower():
+            results.append({**doc, "source": "local"})
+    
+    # Google Cloud Dokumente durchsuchen
+    try:
+        gcp_results = await document_ai_client.search_documents(q, limit//2)
+        for gcp_doc in gcp_results:
+            results.append({
+                "id": gcp_doc["document_id"],
+                "text": gcp_doc.get("text", ""),
+                "entities": gcp_doc.get("entities", []),
+                "doc_type": gcp_doc.get("doc_type", "unknown"),
+                "confidence": gcp_doc.get("confidence", 0.0),
+                "created_at": gcp_doc.get("created_at", ""),
+                "source": "google_cloud_ai"
+            })
+    except Exception as e:
+        logger.error(f"Fehler bei der GCP-Suche: {e}")
+    
+    # Limitiere und sortiere Ergebnisse
+    results = sorted(results, key=lambda x: x.get("confidence", 0.0), reverse=True)[:limit]
+    
+    return {
+        "query": q,
+        "results": results,
+        "total": len(results)
+    }
+
+@app.get("/api/config/status")
+async def get_configuration_status():
+    """Zeige den Konfigurationsstatus der Integrationen"""
+    return {
+        "google_cloud_ai": {
+            "configured": document_ai_client.is_configured,
+            "project_id": document_ai_client.project_id,
+            "location": document_ai_client.location,
+            "processor_id": document_ai_client.processor_id
+        },
+        "database": {
+            "type": "in_memory",
+            "documents_count": len(documents)
+        }
+    }
 
 if __name__ == "__main__":
     import uvicorn

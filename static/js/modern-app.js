@@ -295,14 +295,18 @@ class NeuraLexApp {
     async updateJobStatuses() {
         try {
             const response = await fetch('/jobs?limit=10');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
             const data = await response.json();
             
-            if (data.jobs) {
+            if (data && data.jobs) {
                 this.updateJobDisplay(data.jobs);
                 this.updateStatistics(data.jobs);
             }
         } catch (error) {
-            console.error('Error fetching job statuses:', error);
+            // Silently handle errors to avoid console spam
+            // console.error('Error fetching job statuses:', error);
         }
     }
 
