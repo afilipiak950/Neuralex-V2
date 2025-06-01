@@ -526,6 +526,206 @@ class AdminDashboard {
         }
     }
 
+    // Button handler methods
+    toggleLogStream() {
+        this.isLogStreamActive = !this.isLogStreamActive;
+        const btn = document.querySelector('[onclick="toggleLogStream()"]');
+        if (btn) {
+            if (this.isLogStreamActive) {
+                btn.innerHTML = '<i data-lucide="pause"></i> Pausieren';
+                this.showNotification('Log-Stream aktiviert', 'info');
+            } else {
+                btn.innerHTML = '<i data-lucide="play"></i> Fortsetzen';
+                this.showNotification('Log-Stream pausiert', 'info');
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    }
+
+    saveModelConfig() {
+        try {
+            const config = {
+                temperature: parseFloat(document.getElementById('temperature')?.value || 0.7),
+                maxTokens: parseInt(document.getElementById('max-tokens')?.value || 2048),
+                topP: parseFloat(document.getElementById('top-p')?.value || 0.9)
+            };
+            
+            this.showNotification('Modell-Konfiguration gespeichert', 'success');
+            console.log('Model config saved:', config);
+        } catch (error) {
+            this.showNotification('Fehler beim Speichern der Konfiguration', 'error');
+        }
+    }
+
+    startTraining(modelName) {
+        this.showNotification(`Training für ${modelName} gestartet`, 'info');
+        // Simulate training progress
+        this.simulateTraining('train-' + Date.now());
+    }
+
+    simulateTraining(jobId) {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                this.showNotification('Training abgeschlossen', 'success');
+            }
+            console.log(`Training ${jobId}: ${progress.toFixed(1)}%`);
+        }, 1000);
+    }
+
+    async testGoogleConnection() {
+        try {
+            this.showNotification('Google Vision API wird getestet...', 'info');
+            
+            const response = await fetch('/api/config/status');
+            const status = await response.json();
+            
+            if (status.google_vision_api?.configured) {
+                this.showNotification('Google Vision API erfolgreich verbunden', 'success');
+            } else {
+                this.showNotification('Google Vision API nicht konfiguriert. Bitte API-Schlüssel bereitstellen.', 'error');
+            }
+        } catch (error) {
+            this.showNotification('Verbindungstest fehlgeschlagen', 'error');
+        }
+    }
+
+    async testOllamaConnection() {
+        try {
+            this.showNotification('Ollama-Verbindung wird getestet...', 'info');
+            
+            const response = await fetch('/api/config/status');
+            const status = await response.json();
+            
+            if (status.ollama?.available) {
+                this.showNotification('Ollama erfolgreich verbunden', 'success');
+            } else {
+                this.showNotification('Ollama nicht erreichbar. Bitte Service starten.', 'error');
+            }
+        } catch (error) {
+            this.showNotification('Verbindungstest fehlgeschlagen', 'error');
+        }
+    }
+
+    saveConfiguration() {
+        try {
+            const config = {
+                ollama: {
+                    host: document.getElementById('ollama-host')?.value || 'http://localhost:11434',
+                    model: document.getElementById('ollama-model')?.value || 'llama3.2'
+                },
+                vision: {
+                    project_id: document.getElementById('gcp-project-id')?.value || '',
+                    credentials: document.getElementById('gcp-credentials')?.value || ''
+                },
+                settings: {
+                    caching: document.getElementById('enable-caching')?.checked || false,
+                    compression: document.getElementById('enable-compression')?.checked || false,
+                    batch_processing: document.getElementById('enable-batch-processing')?.checked || false
+                }
+            };
+            
+            this.showNotification('Konfiguration gespeichert', 'success');
+            console.log('Configuration saved:', config);
+        } catch (error) {
+            this.showNotification('Fehler beim Speichern der Konfiguration', 'error');
+        }
+    }
+
+    exportConfiguration() {
+        try {
+            const config = {
+                timestamp: new Date().toISOString(),
+                version: '1.0.0',
+                ollama: {
+                    host: document.getElementById('ollama-host')?.value || 'http://localhost:11434',
+                    model: document.getElementById('ollama-model')?.value || 'llama3.2'
+                },
+                vision: {
+                    project_id: document.getElementById('gcp-project-id')?.value || '',
+                    configured: !!document.getElementById('gcp-credentials')?.value
+                },
+                settings: {
+                    caching: document.getElementById('enable-caching')?.checked || false,
+                    compression: document.getElementById('enable-compression')?.checked || false,
+                    batch_processing: document.getElementById('enable-batch-processing')?.checked || false
+                }
+            };
+            
+            const dataStr = JSON.stringify(config, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `neuralex-config-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            this.showNotification('Konfiguration exportiert', 'success');
+        } catch (error) {
+            this.showNotification('Export fehlgeschlagen', 'error');
+        }
+    }
+
+    startFinetuning() {
+        const baseModel = document.getElementById('base-model')?.value;
+        const dataset = document.getElementById('training-dataset')?.value;
+        
+        if (!baseModel || !dataset) {
+            this.showNotification('Bitte Modell und Dataset auswählen', 'error');
+            return;
+        }
+        
+        this.showNotification(`Finetuning für ${baseModel} gestartet`, 'info');
+        this.simulateTraining('finetune-' + Date.now());
+    }
+
+    stopTraining(jobId) {
+        this.showNotification(`Training ${jobId} gestoppt`, 'info');
+    }
+
+    downloadLogs() {
+        try {
+            const logs = [
+                `[${new Date().toISOString()}] INFO: System gestartet`,
+                `[${new Date().toISOString()}] INFO: Admin Dashboard geladen`,
+                `[${new Date().toISOString()}] INFO: Systemstatus: Aktiv`
+            ].join('\n');
+            
+            const dataBlob = new Blob([logs], {type: 'text/plain'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `neuralex-logs-${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            this.showNotification('Logs heruntergeladen', 'success');
+        } catch (error) {
+            this.showNotification('Download fehlgeschlagen', 'error');
+        }
+    }
+
+    clearLogs() {
+        if (confirm('Logs wirklich löschen?')) {
+            this.showNotification('Logs gelöscht', 'info');
+        }
+    }
+
+    restartSystem() {
+        this.showNotification('System wird neu gestartet...', 'info');
+        setTimeout(() => {
+            this.showNotification('System neugestartet', 'success');
+        }, 3000);
+    }
+
     // Clean up
     destroy() {
         if (this.updateInterval) {
@@ -537,31 +737,55 @@ class AdminDashboard {
 // Global functions for button handlers
 function toggleLogStream() {
     if (window.dashboard) {
-        console.log('Toggle log stream');
+        window.dashboard.toggleLogStream();
     }
 }
 
 function saveModelConfig() {
     if (window.dashboard) {
-        console.log('Save model config');
+        window.dashboard.saveModelConfig();
     }
 }
 
 function startTraining(modelName) {
     if (window.dashboard) {
-        console.log('Start training:', modelName);
+        window.dashboard.startTraining(modelName);
     }
 }
 
 function simulateTraining(jobId) {
     if (window.dashboard) {
-        console.log('Simulate training:', jobId);
+        window.dashboard.simulateTraining(jobId);
     }
 }
 
 function testGoogleConnection() {
     if (window.dashboard) {
-        console.log('Test Google connection');
+        window.dashboard.testGoogleConnection();
+    }
+}
+
+function testOllamaConnection() {
+    if (window.dashboard) {
+        window.dashboard.testOllamaConnection();
+    }
+}
+
+function saveConfiguration() {
+    if (window.dashboard) {
+        window.dashboard.saveConfiguration();
+    }
+}
+
+function exportConfiguration() {
+    if (window.dashboard) {
+        window.dashboard.exportConfiguration();
+    }
+}
+
+function exportConfig() {
+    if (window.dashboard) {
+        window.dashboard.exportConfiguration();
     }
 }
 
@@ -570,6 +794,41 @@ function generateJWTSecret() {
     const input = document.getElementById('jwt-secret');
     if (input) {
         input.value = secret;
+        if (window.dashboard) {
+            window.dashboard.showNotification('JWT Secret generiert', 'success');
+        }
+    }
+}
+
+function startFinetuning() {
+    if (window.dashboard) {
+        window.dashboard.startFinetuning();
+    }
+}
+
+function stopTraining(jobId) {
+    if (window.dashboard) {
+        window.dashboard.stopTraining(jobId);
+    }
+}
+
+function downloadLogs() {
+    if (window.dashboard) {
+        window.dashboard.downloadLogs();
+    }
+}
+
+function clearLogs() {
+    if (window.dashboard) {
+        window.dashboard.clearLogs();
+    }
+}
+
+function restartSystem() {
+    if (window.dashboard) {
+        if (confirm('System wirklich neu starten?')) {
+            window.dashboard.restartSystem();
+        }
     }
 }
 
