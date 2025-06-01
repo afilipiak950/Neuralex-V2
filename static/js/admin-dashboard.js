@@ -128,15 +128,22 @@ class AdminDashboard {
         try {
             const response = await fetch('/jobs?limit=1');
             const data = await response.json();
-            document.getElementById('doc-count').textContent = data.total || 0;
+            const docCountEl = document.getElementById('doc-count');
+            if (docCountEl) {
+                docCountEl.textContent = data.total || 0;
+            }
         } catch (error) {
             console.error('Failed to update document count:', error);
         }
     }
 
     async loadOverviewData() {
-        await this.updateRecentActivity();
-        await this.updateSystemMetrics();
+        try {
+            await this.updateRecentActivity();
+            await this.updateSystemMetrics();
+        } catch (error) {
+            console.error('Failed to load overview data:', error);
+        }
     }
 
     async updateRecentActivity() {
@@ -145,10 +152,15 @@ class AdminDashboard {
             const data = await response.json();
             
             const activityList = document.getElementById('activity-list');
+            if (!activityList) return;
+            
             activityList.innerHTML = '';
 
-            if (data.jobs && data.jobs.length > 0) {
-                data.jobs.forEach(job => {
+            // Handle different response formats
+            const jobs = Array.isArray(data) ? data : (data.jobs || []);
+            
+            if (jobs && jobs.length > 0) {
+                jobs.forEach(job => {
                     const activityItem = this.createActivityItem(job);
                     activityList.appendChild(activityItem);
                 });
@@ -253,19 +265,34 @@ class AdminDashboard {
 
     updateModelsList(status) {
         const modelsList = document.getElementById('models-list');
+        if (!modelsList) return;
         
-        const models = [
-            { name: 'Llama 3.2', status: 'active', size: '3.8GB', accuracy: '94.2%' },
-            { name: 'Mistral 7B', status: 'idle', size: '7.2GB', accuracy: '92.8%' },
-            { name: 'Phi-3 Mini', status: 'idle', size: '2.1GB', accuracy: '89.5%' },
-            { name: 'Gemma 2B', status: 'idle', size: '1.6GB', accuracy: '87.3%' }
-        ];
-
         modelsList.innerHTML = '';
-        models.forEach(model => {
-            const modelItem = this.createModelItem(model);
-            modelsList.appendChild(modelItem);
-        });
+        
+        // Check if Ollama is available and has models
+        if (status.ollama?.available && status.ollama.models) {
+            status.ollama.models.forEach(model => {
+                const modelItem = this.createModelItem(model);
+                modelsList.appendChild(modelItem);
+            });
+        } else {
+            modelsList.innerHTML = `
+                <div class="no-models">
+                    <div class="no-models-content">
+                        <i data-lucide="alert-circle"></i>
+                        <h4>Keine Modelle verfügbar</h4>
+                        <p>Ollama ist nicht erreichbar oder keine Modelle installiert.</p>
+                        <button class="btn btn-primary" onclick="dashboard.refreshModels()">
+                            <i data-lucide="refresh-cw"></i>
+                            Neu laden
+                        </button>
+                    </div>
+                </div>
+            `;
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
     }
 
     createModelItem(model) {
