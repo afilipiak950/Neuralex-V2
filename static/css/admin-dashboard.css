@@ -1128,6 +1128,222 @@ body {
     color: rgba(255, 255, 255, 0.7);
 }
 
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    min-width: 300px;
+    font-family: inherit;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.notification-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.notification-error {
+    border-color: var(--accent-red);
+}
+
+.notification-success {
+    border-color: var(--accent-orange);
+}
+
+.notification-info {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Model Item Styles */
+.model-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.model-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-red);
+}
+
+.model-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.model-name {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.model-status.active {
+    background: rgba(0, 255, 127, 0.2);
+    color: #00ff7f;
+}
+
+.model-status.idle, .model-status.available {
+    background: rgba(255, 138, 0, 0.2);
+    color: var(--accent-orange);
+}
+
+.model-status.loading {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+}
+
+.model-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.model-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.model-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Activity Item Styles */
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon.success {
+    background: rgba(0, 255, 127, 0.2);
+    color: #00ff7f;
+}
+
+.activity-icon.error {
+    background: rgba(220, 38, 127, 0.2);
+    color: var(--accent-red);
+}
+
+.activity-icon.processing {
+    background: rgba(255, 138, 0, 0.2);
+    color: var(--accent-orange);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.activity-meta {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* No Models State */
+.no-models {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    text-align: center;
+}
+
+.no-models-content {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.no-models-content i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.no-models-content h4 {
+    margin: 1rem 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.no-models-content p {
+    margin: 0.5rem 0 1.5rem 0;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Metric Display */
+.metric-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
 .config-section {
     margin-bottom: 2rem;
     padding-bottom: 2rem;
