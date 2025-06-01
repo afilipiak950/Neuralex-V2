@@ -14,6 +14,7 @@ import uuid
 import json
 from datetime import datetime
 from app.integrations.google_vision_api import vision_client
+from app.ml_client.ollama_client import ollama_analyzer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -259,6 +260,94 @@ async def process_document_background(job_id: str):
         
         logger.error(f"Document processing failed: {job_id}, error: {e}")
 
+@app.post("/api/ollama/analyze")
+async def analyze_document_with_ollama(request: Request):
+    """Analysiert OCR-JSON-Daten mit Ollama und extrahiert strukturierte Informationen"""
+    try:
+        # Lese JSON-Daten aus Request
+        ocr_data = await request.json()
+        
+        # Analysiere mit Ollama
+        result = await ollama_analyzer.analyze_document(ocr_data)
+        
+        if "error" in result:
+            return {"error": result["error"], "ollama_available": ollama_analyzer.is_available}
+        
+        # Speichere Ergebnis lokal
+        job_id = result["document_id"]
+        documents[job_id] = {
+            "id": job_id,
+            "status": result["status"],
+            "created_at": result["processed_at"],
+            "updated_at": result["processed_at"],
+            "source": "ollama_analysis",
+            "doc_type": result["doc_type"],
+            "event_type": result["event_type"],
+            "confidence": result["confidence"],
+            "extracted_data": result["extracted_data"],
+            "original_text": result.get("original_text", ""),
+            "processor": result["processor"],
+            "model": result["model"]
+        }
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Fehler bei Ollama-Analyse: {e}")
+        return {"error": str(e), "ollama_available": ollama_analyzer.is_available}
+
+@app.post("/api/process/complete")
+async def complete_document_processing(file: UploadFile = File(...)):
+    """Vollständige Dokumentverarbeitung: OCR + Ollama-Analyse"""
+    try:
+        # Schritt 1: OCR mit Vision API
+        image_data = await file.read()
+        ocr_result = await vision_client.perform_ocr(image_data, file.content_type or "image/png")
+        
+        if "error" in ocr_result:
+            return {"error": f"OCR fehlgeschlagen: {ocr_result['error']}", "stage": "ocr"}
+        
+        # Schritt 2: Ollama-Analyse der OCR-Daten
+        analysis_result = await ollama_analyzer.analyze_document(ocr_result)
+        
+        if "error" in analysis_result:
+            return {"error": f"Analyse fehlgeschlagen: {analysis_result['error']}", "stage": "analysis"}
+        
+        # Kombiniere OCR + Analyse Ergebnisse
+        final_result = {
+            "document_id": analysis_result["document_id"],
+            "status": "completed",
+            "filename": file.filename,
+            "processing_stages": {
+                "ocr": {
+                    "completed": True,
+                    "source": "google_vision_api",
+                    "raw_text": ocr_result.get("text", "")
+                },
+                "analysis": {
+                    "completed": True,
+                    "source": "ollama",
+                    "model": analysis_result["model"]
+                }
+            },
+            "doc_type": analysis_result["doc_type"],
+            "event_type": analysis_result["event_type"],
+            "confidence": analysis_result["confidence"],
+            "extracted_data": analysis_result["extracted_data"],
+            "created_at": analysis_result["processed_at"],
+            "updated_at": analysis_result["processed_at"]
+        }
+        
+        # Speichere vollständiges Ergebnis
+        job_id = final_result["document_id"]
+        documents[job_id] = final_result
+        
+        return final_result
+        
+    except Exception as e:
+        logger.error(f"Fehler bei vollständiger Dokumentverarbeitung: {e}")
+        return {"error": str(e), "stage": "unknown"}
+
 @app.post("/api/vision/ocr")
 async def perform_ocr(file: UploadFile = File(...)):
     """Führt OCR auf einem hochgeladenen Bild durch"""
@@ -365,10 +454,23 @@ async def get_configuration_status():
             "configured": vision_client.is_configured,
             "project_id": vision_client.project_id if hasattr(vision_client, 'project_id') else None
         },
+        "ollama": {
+            "available": ollama_analyzer.is_available,
+            "host": ollama_analyzer.ollama_host,
+            "model": ollama_analyzer.default_model
+        },
         "database": {
             "type": "in_memory",
             "documents_count": len(documents)
-        }
+        },
+        "supported_doc_types": [
+            "INVOICE", "CONTRACT", "RECEIPT", "LETTER", 
+            "FORM", "CERTIFICATE", "REPORT", "OTHER"
+        ],
+        "supported_event_types": [
+            "PAYMENT_DUE", "CONTRACT_SIGNED", "PAYMENT_CONFIRMED",
+            "DOCUMENT_PROCESSED", "ANALYSIS_COMPLETED"
+        ]
     }
 
 if __name__ == "__main__":
