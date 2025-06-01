@@ -86,6 +86,14 @@ async def dashboard(request: Request):
         "recent_documents": list(documents.values())[-10:]  # Last 10 documents
     })
 
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    """Serve the comprehensive admin dashboard"""
+    return templates.TemplateResponse("admin_dashboard.html", {
+        "request": request,
+        "title": "NeuraLex Admin Dashboard"
+    })
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint"""
