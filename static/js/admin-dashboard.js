@@ -17,8 +17,10 @@ class AdminDashboard {
         this.initFormHandlers();
         this.loadSystemStatus();
         
-        // Initialize Lucide icons
-        lucide.createIcons();
+        // Initialize Lucide icons safely
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 
     initNavigation() {
@@ -37,13 +39,19 @@ class AdminDashboard {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`[data-section="${section}"]`).classList.add('active');
+        const targetNav = document.querySelector(`[data-section="${section}"]`);
+        if (targetNav) {
+            targetNav.classList.add('active');
+        }
 
         // Update content
         document.querySelectorAll('.admin-section').forEach(sec => {
             sec.classList.remove('active');
         });
-        document.getElementById(section).classList.add('active');
+        const targetSection = document.getElementById(section);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
 
         this.currentSection = section;
 
@@ -91,24 +99,28 @@ class AdminDashboard {
         const ollamaStatus = document.getElementById('ollama-status');
         const ollamaMeta = document.getElementById('ollama-meta');
         
-        if (status.ollama?.available) {
-            ollamaStatus.innerHTML = '<span class="status-dot online"></span>Online';
-            ollamaMeta.textContent = `Host: ${status.ollama.host} | Model: ${status.ollama.model}`;
-        } else {
-            ollamaStatus.innerHTML = '<span class="status-dot offline"></span>Offline';
-            ollamaMeta.textContent = 'Nicht verfügbar';
+        if (ollamaStatus && ollamaMeta) {
+            if (status.ollama?.available) {
+                ollamaStatus.innerHTML = '<span class="status-dot online"></span>Online';
+                ollamaMeta.textContent = `Host: ${status.ollama.host} | Model: ${status.ollama.model}`;
+            } else {
+                ollamaStatus.innerHTML = '<span class="status-dot offline"></span>Offline';
+                ollamaMeta.textContent = 'Nicht verfügbar';
+            }
         }
 
         // Vision API Status
         const visionStatus = document.getElementById('vision-status');
         const visionMeta = document.getElementById('vision-meta');
         
-        if (status.google_vision_api?.configured) {
-            visionStatus.innerHTML = '<span class="status-dot online"></span>Konfiguriert';
-            visionMeta.textContent = `Project: ${status.google_vision_api.project_id || 'N/A'}`;
-        } else {
-            visionStatus.innerHTML = '<span class="status-dot offline"></span>Nicht konfiguriert';
-            visionMeta.textContent = 'Google Cloud Credentials erforderlich';
+        if (visionStatus && visionMeta) {
+            if (status.google_vision_api?.configured) {
+                visionStatus.innerHTML = '<span class="status-dot online"></span>Konfiguriert';
+                visionMeta.textContent = `Project: ${status.google_vision_api.project_id || 'N/A'}`;
+            } else {
+                visionStatus.innerHTML = '<span class="status-dot offline"></span>Nicht konfiguriert';
+                visionMeta.textContent = 'Google Cloud Credentials erforderlich';
+            }
         }
     }
 
