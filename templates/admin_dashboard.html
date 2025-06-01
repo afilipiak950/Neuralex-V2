@@ -33,6 +33,10 @@
                     <i data-lucide="settings"></i>
                     Finetuning
                 </a>
+                <a href="#processing" class="nav-item" data-section="processing">
+                    <i data-lucide="file-text"></i>
+                    Dokumentverarbeitung
+                </a>
                 <a href="#analytics" class="nav-item" data-section="analytics">
                     <i data-lucide="bar-chart-3"></i>
                     Analytics
@@ -415,6 +419,112 @@
                         </div>
                         <div class="evaluation-chart">
                             <canvas id="evaluationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Document Processing Section -->
+            <section id="processing" class="admin-section">
+                <div class="section-header">
+                    <h2>Dokumentverarbeitung</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-success" onclick="showUploadModal()">
+                            <i data-lucide="upload"></i>
+                            Dokument hochladen
+                        </button>
+                        <button class="btn btn-primary" onclick="refreshDocuments()">
+                            <i data-lucide="refresh-cw"></i>
+                            Aktualisieren
+                        </button>
+                    </div>
+                </div>
+
+                <div class="processing-grid">
+                    <!-- Document Upload Area -->
+                    <div class="upload-panel">
+                        <h3>Neues Dokument verarbeiten</h3>
+                        <div class="upload-area" id="upload-area">
+                            <div class="upload-placeholder">
+                                <i data-lucide="upload-cloud"></i>
+                                <p>Dokument hier ablegen oder klicken zum Auswählen</p>
+                                <p class="upload-info">Unterstützte Formate: PDF, PNG, JPG, JPEG</p>
+                            </div>
+                            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg" style="display: none;">
+                        </div>
+                        
+                        <!-- Processing Options -->
+                        <div class="processing-options">
+                            <h4>Verarbeitungsoptionen</h4>
+                            <div class="option-group">
+                                <label class="option-label">
+                                    <input type="radio" name="processing-method" value="vision-only" checked>
+                                    <span>Nur OCR (Vision API)</span>
+                                </label>
+                                <label class="option-label">
+                                    <input type="radio" name="processing-method" value="ollama-only">
+                                    <span>Nur Analyse (Ollama)</span>
+                                </label>
+                                <label class="option-label">
+                                    <input type="radio" name="processing-method" value="complete">
+                                    <span>Vollständige Verarbeitung (OCR + Analyse)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Processing Status -->
+                    <div class="status-panel">
+                        <h3>Verarbeitungsstatus</h3>
+                        <div class="status-queue" id="processing-queue">
+                            <div class="queue-empty">
+                                <i data-lucide="inbox"></i>
+                                <span>Keine aktiven Verarbeitungen</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Library -->
+                    <div class="library-panel">
+                        <h3>Dokumentbibliothek</h3>
+                        <div class="library-controls">
+                            <div class="search-box">
+                                <input type="text" id="doc-search" placeholder="Dokumente durchsuchen..." class="form-control">
+                                <i data-lucide="search"></i>
+                            </div>
+                            <div class="filter-controls">
+                                <select id="doc-type-filter" class="form-control">
+                                    <option value="all">Alle Typen</option>
+                                    <option value="INVOICE">Rechnungen</option>
+                                    <option value="CONTRACT">Verträge</option>
+                                    <option value="RECEIPT">Quittungen</option>
+                                    <option value="REPORT">Berichte</option>
+                                    <option value="OTHER">Sonstige</option>
+                                </select>
+                                <select id="doc-status-filter" class="form-control">
+                                    <option value="all">Alle Status</option>
+                                    <option value="completed">Abgeschlossen</option>
+                                    <option value="processing">In Bearbeitung</option>
+                                    <option value="failed">Fehlgeschlagen</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="document-grid" id="document-grid">
+                            <!-- Documents will be populated here -->
+                        </div>
+                        <div class="pagination-controls" id="pagination-controls">
+                            <!-- Pagination will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Document Details -->
+                    <div class="details-panel">
+                        <h3>Dokumentdetails</h3>
+                        <div class="details-content" id="document-details">
+                            <div class="no-selection">
+                                <i data-lucide="file-text"></i>
+                                <span>Wählen Sie ein Dokument aus der Bibliothek</span>
+                            </div>
                         </div>
                     </div>
                 </div>

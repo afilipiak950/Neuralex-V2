@@ -65,6 +65,9 @@ class AdminDashboard {
             case 'finetuning':
                 await this.loadFinetuningData();
                 break;
+            case 'processing':
+                await this.loadProcessingData();
+                break;
             case 'analytics':
                 await this.loadAnalyticsData();
                 break;
