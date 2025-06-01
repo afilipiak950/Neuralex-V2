@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuraLex Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/admin-dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Navigation -->
+        <nav class="admin-nav">
+            <div class="nav-brand">
+                <h1>NeuraLex Admin</h1>
+                <span class="version">v2.1.0</span>
+            </div>
+            <div class="nav-items">
+                <a href="#overview" class="nav-item active" data-section="overview">
+                    <i data-lucide="activity"></i>
+                    Übersicht
+                </a>
+                <a href="#models" class="nav-item" data-section="models">
+                    <i data-lucide="brain"></i>
+                    Modelle
+                </a>
+                <a href="#monitoring" class="nav-item" data-section="monitoring">
+                    <i data-lucide="monitor"></i>
+                    Monitoring
+                </a>
+                <a href="#finetuning" class="nav-item" data-section="finetuning">
+                    <i data-lucide="settings"></i>
+                    Finetuning
+                </a>
+                <a href="#analytics" class="nav-item" data-section="analytics">
+                    <i data-lucide="bar-chart-3"></i>
+                    Analytics
+                </a>
+                <a href="#configuration" class="nav-item" data-section="configuration">
+                    <i data-lucide="cog"></i>
+                    Konfiguration
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- Overview Section -->
+            <section id="overview" class="admin-section active">
+                <div class="section-header">
+                    <h2>System Übersicht</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="refreshOverview()">
+                            <i data-lucide="refresh-cw"></i>
+                            Aktualisieren
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overview-grid">
+                    <!-- Status Cards -->
+                    <div class="status-cards">
+                        <div class="status-card ollama">
+                            <div class="card-icon">
+                                <i data-lucide="cpu"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Ollama Status</h3>
+                                <div class="status-indicator" id="ollama-status">
+                                    <span class="status-dot loading"></span>
+                                    Wird geladen...
+                                </div>
+                                <div class="card-meta" id="ollama-meta">
+                                    Host: localhost:11434
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-card vision">
+                            <div class="card-icon">
+                                <i data-lucide="eye"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Vision API</h3>
+                                <div class="status-indicator" id="vision-status">
+                                    <span class="status-dot loading"></span>
+                                    Wird geladen...
+                                </div>
+                                <div class="card-meta" id="vision-meta">
+                                    Google Cloud Integration
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-card platform">
+                            <div class="card-icon">
+                                <i data-lucide="server"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Platform</h3>
+                                <div class="status-indicator" id="platform-status">
+                                    <span class="status-dot online"></span>
+                                    Online
+                                </div>
+                                <div class="card-meta" id="platform-meta">
+                                    Dokumente: <span id="doc-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-card performance">
+                            <div class="card-icon">
+                                <i data-lucide="zap"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>Performance</h3>
+                                <div class="status-indicator" id="performance-status">
+                                    <span class="status-dot optimal"></span>
+                                    Optimal
+                                </div>
+                                <div class="card-meta" id="performance-meta">
+                                    Avg. Verarbeitung: 2.4s
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Metrics -->
+                    <div class="metrics-panel">
+                        <h3>System Metriken</h3>
+                        <div class="metrics-grid">
+                            <div class="metric">
+                                <label>CPU Auslastung</label>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 45%"></div>
+                                </div>
+                                <span class="metric-value">45%</span>
+                            </div>
+                            <div class="metric">
+                                <label>RAM Nutzung</label>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 72%"></div>
+                                </div>
+                                <span class="metric-value">72%</span>
+                            </div>
+                            <div class="metric">
+                                <label>GPU Auslastung</label>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 0%"></div>
+                                </div>
+                                <span class="metric-value">N/A</span>
+                            </div>
+                            <div class="metric">
+                                <label>Speicher</label>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 38%"></div>
+                                </div>
+                                <span class="metric-value">38%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="activity-panel">
+                        <h3>Aktuelle Aktivitäten</h3>
+                        <div class="activity-list" id="activity-list">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Models Section -->
+            <section id="models" class="admin-section">
+                <div class="section-header">
+                    <h2>Modell Management</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="pullNewModel()">
+                            <i data-lucide="download"></i>
+                            Modell hinzufügen
+                        </button>
+                        <button class="btn btn-primary" onclick="refreshModels()">
+                            <i data-lucide="refresh-cw"></i>
+                            Aktualisieren
+                        </button>
+                    </div>
+                </div>
+
+                <div class="models-grid">
+                    <!-- Active Models -->
+                    <div class="models-panel">
+                        <h3>Installierte Modelle</h3>
+                        <div class="models-list" id="models-list">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Model Performance -->
+                    <div class="performance-panel">
+                        <h3>Modell Performance</h3>
+                        <div class="performance-chart">
+                            <canvas id="modelPerformanceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Model Configuration -->
+                    <div class="config-panel">
+                        <h3>Modell Konfiguration</h3>
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>Primäres Modell</label>
+                                <select id="primary-model" class="form-control">
+                                    <option value="llama3.2">Llama 3.2</option>
+                                    <option value="mistral">Mistral 7B</option>
+                                    <option value="phi3">Phi-3 Mini</option>
+                                    <option value="gemma:2b">Gemma 2B</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Fallback Modell</label>
+                                <select id="fallback-model" class="form-control">
+                                    <option value="gemma:2b">Gemma 2B</option>
+                                    <option value="phi3">Phi-3 Mini</option>
+                                    <option value="mistral">Mistral 7B</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Temperature</label>
+                                <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.2" class="form-range">
+                                <span class="range-value">0.2</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Max Tokens</label>
+                                <input type="number" id="max-tokens" value="2048" class="form-control">
+                            </div>
+                            <button class="btn btn-primary" onclick="saveModelConfig()">
+                                Konfiguration speichern
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Monitoring Section -->
+            <section id="monitoring" class="admin-section">
+                <div class="section-header">
+                    <h2>System Monitoring</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="exportLogs()">
+                            <i data-lucide="download"></i>
+                            Logs exportieren
+                        </button>
+                        <button class="btn btn-danger" onclick="clearLogs()">
+                            <i data-lucide="trash-2"></i>
+                            Logs löschen
+                        </button>
+                    </div>
+                </div>
+
+                <div class="monitoring-grid">
+                    <!-- Real-time Charts -->
+                    <div class="charts-panel">
+                        <div class="chart-container">
+                            <h3>CPU & Memory</h3>
+                            <canvas id="systemChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Request Volume</h3>
+                            <canvas id="requestChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Error Analysis -->
+                    <div class="errors-panel">
+                        <h3>Fehler Analyse</h3>
+                        <div class="error-stats">
+                            <div class="error-stat">
+                                <span class="error-count">0</span>
+                                <span class="error-label">Heute</span>
+                            </div>
+                            <div class="error-stat">
+                                <span class="error-count">3</span>
+                                <span class="error-label">Diese Woche</span>
+                            </div>
+                            <div class="error-stat">
+                                <span class="error-count">12</span>
+                                <span class="error-label">Diesen Monat</span>
+                            </div>
+                        </div>
+                        <div class="error-list" id="error-list">
+                            <!-- Error entries -->
+                        </div>
+                    </div>
+
+                    <!-- Live Logs -->
+                    <div class="logs-panel">
+                        <h3>Live Logs</h3>
+                        <div class="log-controls">
+                            <select id="log-level" class="form-control">
+                                <option value="all">Alle Levels</option>
+                                <option value="error">Fehler</option>
+                                <option value="warning">Warnungen</option>
+                                <option value="info">Info</option>
+                                <option value="debug">Debug</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="toggleLogStream()">
+                                <i data-lucide="pause"></i>
+                                Pausieren
+                            </button>
+                        </div>
+                        <div class="log-output" id="log-output">
+                            <!-- Live log entries -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Finetuning Section -->
+            <section id="finetuning" class="admin-section">
+                <div class="section-header">
+                    <h2>Modell Finetuning</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-success" onclick="startFinetuning()">
+                            <i data-lucide="play"></i>
+                            Training starten
+                        </button>
+                    </div>
+                </div>
+
+                <div class="finetuning-grid">
+                    <!-- Training Status -->
+                    <div class="training-panel">
+                        <h3>Training Status</h3>
+                        <div class="training-status" id="training-status">
+                            <div class="status-card idle">
+                                <i data-lucide="pause-circle"></i>
+                                <span>Kein aktives Training</span>
+                            </div>
+                        </div>
+                        <div class="training-progress" id="training-progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span id="progress-text">0%</span>
+                                <span id="eta-text">ETA: --</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Configuration -->
+                    <div class="training-config-panel">
+                        <h3>Training Konfiguration</h3>
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>Basis Modell</label>
+                                <select id="base-model" class="form-control">
+                                    <option value="llama3.2">Llama 3.2</option>
+                                    <option value="mistral">Mistral 7B</option>
+                                    <option value="phi3">Phi-3 Mini</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Training Dataset</label>
+                                <select id="training-dataset" class="form-control">
+                                    <option value="invoices">Rechnungen (2.4k Samples)</option>
+                                    <option value="contracts">Verträge (1.8k Samples)</option>
+                                    <option value="mixed">Gemischt (5.2k Samples)</option>
+                                    <option value="custom">Benutzerdefiniert</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Learning Rate</label>
+                                <input type="number" id="learning-rate" value="0.0001" step="0.0001" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Epochs</label>
+                                <input type="number" id="epochs" value="3" min="1" max="10" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Batch Size</label>
+                                <input type="number" id="batch-size" value="4" min="1" max="16" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training History -->
+                    <div class="history-panel">
+                        <h3>Training Verlauf</h3>
+                        <div class="history-list" id="training-history">
+                            <!-- Training history entries -->
+                        </div>
+                    </div>
+
+                    <!-- Model Evaluation -->
+                    <div class="evaluation-panel">
+                        <h3>Modell Bewertung</h3>
+                        <div class="evaluation-metrics">
+                            <div class="metric-card">
+                                <h4>Accuracy</h4>
+                                <div class="metric-value">94.2%</div>
+                                <div class="metric-trend up">+2.1%</div>
+                            </div>
+                            <div class="metric-card">
+                                <h4>F1-Score</h4>
+                                <div class="metric-value">0.912</div>
+                                <div class="metric-trend up">+0.034</div>
+                            </div>
+                            <div class="metric-card">
+                                <h4>Latenz</h4>
+                                <div class="metric-value">1.8s</div>
+                                <div class="metric-trend down">-0.3s</div>
+                            </div>
+                        </div>
+                        <div class="evaluation-chart">
+                            <canvas id="evaluationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="admin-section">
+                <div class="section-header">
+                    <h2>Analytics & Insights</h2>
+                    <div class="header-actions">
+                        <select id="analytics-timeframe" class="form-control">
+                            <option value="24h">Letzte 24h</option>
+                            <option value="7d">Letzte 7 Tage</option>
+                            <option value="30d">Letzte 30 Tage</option>
+                            <option value="90d">Letzte 90 Tage</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="generateReport()">
+                            <i data-lucide="file-text"></i>
+                            Report generieren
+                        </button>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Document Processing Analytics -->
+                    <div class="processing-analytics">
+                        <h3>Dokumentverarbeitung</h3>
+                        <div class="analytics-chart">
+                            <canvas id="processingChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Document Type Distribution -->
+                    <div class="distribution-analytics">
+                        <h3>Dokumenttyp Verteilung</h3>
+                        <div class="analytics-chart">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Performance Trends -->
+                    <div class="trends-analytics">
+                        <h3>Performance Trends</h3>
+                        <div class="analytics-chart">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Key Insights -->
+                    <div class="insights-panel">
+                        <h3>Key Insights</h3>
+                        <div class="insights-list">
+                            <div class="insight">
+                                <i data-lucide="trending-up"></i>
+                                <div class="insight-content">
+                                    <h4>Verarbeitungsgeschwindigkeit</h4>
+                                    <p>23% Verbesserung in den letzten 7 Tagen</p>
+                                </div>
+                            </div>
+                            <div class="insight">
+                                <i data-lucide="target"></i>
+                                <div class="insight-content">
+                                    <h4>Genauigkeit</h4>
+                                    <p>Rechnungserkennung erreicht 96.8% Accuracy</p>
+                                </div>
+                            </div>
+                            <div class="insight">
+                                <i data-lucide="alert-triangle"></i>
+                                <div class="insight-content">
+                                    <h4>Bottleneck identifiziert</h4>
+                                    <p>OCR-Verarbeitung benötigt Optimierung</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configuration Section -->
+            <section id="configuration" class="admin-section">
+                <div class="section-header">
+                    <h2>System Konfiguration</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="exportConfig()">
+                            <i data-lucide="download"></i>
+                            Export
+                        </button>
+                        <button class="btn btn-success" onclick="saveAllConfig()">
+                            <i data-lucide="save"></i>
+                            Speichern
+                        </button>
+                    </div>
+                </div>
+
+                <div class="config-tabs">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="general">Allgemein</button>
+                        <button class="tab-btn" data-tab="api">API Settings</button>
+                        <button class="tab-btn" data-tab="security">Sicherheit</button>
+                        <button class="tab-btn" data-tab="performance">Performance</button>
+                        <button class="tab-btn" data-tab="integrations">Integrationen</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- General Config -->
+                        <div id="general" class="tab-panel active">
+                            <div class="config-section">
+                                <h3>Grundeinstellungen</h3>
+                                <div class="form-group">
+                                    <label>Platform Name</label>
+                                    <input type="text" id="platform-name" value="NeuraLex Platform" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Default Language</label>
+                                    <select id="default-language" class="form-control">
+                                        <option value="de">Deutsch</option>
+                                        <option value="en">English</option>
+                                        <option value="fr">Français</option>
+                                        <option value="es">Español</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Log Level</label>
+                                    <select id="log-level-config" class="form-control">
+                                        <option value="DEBUG">Debug</option>
+                                        <option value="INFO" selected>Info</option>
+                                        <option value="WARNING">Warning</option>
+                                        <option value="ERROR">Error</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- API Config -->
+                        <div id="api" class="tab-panel">
+                            <div class="config-section">
+                                <h3>Google Cloud Vision API</h3>
+                                <div class="form-group">
+                                    <label>Project ID</label>
+                                    <input type="text" id="gcp-project-id" placeholder="your-project-id" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Service Account JSON</label>
+                                    <textarea id="gcp-credentials" placeholder="Service Account JSON Key" class="form-control" rows="4"></textarea>
+                                </div>
+                                <button class="btn btn-secondary" onclick="testGoogleConnection()">
+                                    <i data-lucide="check-circle"></i>
+                                    Verbindung testen
+                                </button>
+                            </div>
+
+                            <div class="config-section">
+                                <h3>Ollama Configuration</h3>
+                                <div class="form-group">
+                                    <label>Ollama Host</label>
+                                    <input type="text" id="ollama-host" value="http://localhost:11434" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Default Model</label>
+                                    <select id="ollama-default-model" class="form-control">
+                                        <option value="llama3.2">Llama 3.2</option>
+                                        <option value="mistral">Mistral 7B</option>
+                                        <option value="phi3">Phi-3 Mini</option>
+                                        <option value="gemma:2b">Gemma 2B</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-secondary" onclick="testOllamaConnection()">
+                                    <i data-lucide="check-circle"></i>
+                                    Verbindung testen
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Security Config -->
+                        <div id="security" class="tab-panel">
+                            <div class="config-section">
+                                <h3>Authentifizierung</h3>
+                                <div class="form-group">
+                                    <label>Admin Passwort</label>
+                                    <input type="password" id="admin-password" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>JWT Secret</label>
+                                    <input type="text" id="jwt-secret" class="form-control">
+                                    <button class="btn btn-secondary" onclick="generateJWTSecret()">Generieren</button>
+                                </div>
+                                <div class="form-group">
+                                    <label>Session Timeout (Minuten)</label>
+                                    <input type="number" id="session-timeout" value="60" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="config-section">
+                                <h3>Rate Limiting</h3>
+                                <div class="form-group">
+                                    <label>Requests pro Minute</label>
+                                    <input type="number" id="rate-limit" value="100" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Max File Size (MB)</label>
+                                    <input type="number" id="max-file-size" value="50" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Config -->
+                        <div id="performance" class="tab-panel">
+                            <div class="config-section">
+                                <h3>Verarbeitungseinstellungen</h3>
+                                <div class="form-group">
+                                    <label>Concurrent Workers</label>
+                                    <input type="number" id="concurrent-workers" value="4" min="1" max="16" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cache Size (MB)</label>
+                                    <input type="number" id="cache-size" value="512" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Timeout (Sekunden)</label>
+                                    <input type="number" id="processing-timeout" value="300" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="config-section">
+                                <h3>Optimierungen</h3>
+                                <div class="form-group checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="enable-caching" checked>
+                                        <span class="checkmark"></span>
+                                        Result Caching aktivieren
+                                    </label>
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="enable-compression" checked>
+                                        <span class="checkmark"></span>
+                                        Response Compression
+                                    </label>
+                                </div>
+                                <div class="form-group checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="enable-batch-processing">
+                                        <span class="checkmark"></span>
+                                        Batch Processing
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Integrations Config -->
+                        <div id="integrations" class="tab-panel">
+                            <div class="config-section">
+                                <h3>Externe Services</h3>
+                                <div class="integration-item">
+                                    <div class="integration-header">
+                                        <h4>Webhook Notifications</h4>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="webhook-enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Webhook URL</label>
+                                        <input type="url" id="webhook-url" placeholder="https://your-webhook.com/notify" class="form-control">
+                                    </div>
+                                </div>
+
+                                <div class="integration-item">
+                                    <div class="integration-header">
+                                        <h4>Email Notifications</h4>
+                                        <label class="toggle">
+                                            <input type="checkbox" id="email-enabled">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>SMTP Server</label>
+                                        <input type="text" id="smtp-server" placeholder="smtp.gmail.com" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>SMTP Port</label>
+                                        <input type="number" id="smtp-port" value="587" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Modal Title</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <!-- Modal buttons -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin-dashboard.js"></script>
+</body>
+</html>

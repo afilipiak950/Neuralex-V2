@@ -15,6 +15,7 @@ import json
 from datetime import datetime
 from app.integrations.google_vision_api import vision_client
 from app.ml_client.ollama_client import ollama_analyzer
+from app.admin.api import router as admin_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,6 +33,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Initialize templates
 templates = Jinja2Templates(directory="templates")
+
+# Include admin API routes
+app.include_router(admin_router)
 
 # In-memory storage for demo purposes
 documents = {}
